@@ -9,8 +9,8 @@ package br.com.samuelweb.nfe.util;
  */
 public interface ConstantesUtil {
 	
-	String NFE = "NFe";
-	String NFCE = "NFCe";
+	// String NFE = "NFe";
+	// String NFCE = "NFCe";
 	
 	interface SERVICOS {
 		
@@ -43,10 +43,10 @@ public interface ConstantesUtil {
 	}
 
 	
-	interface AMBIENTE {
-		String HOMOLOGACAO = "2";
-		String PRODUCAO = "1";
-	}
+	// interface AMBIENTE {
+	// String HOMOLOGACAO = "2";
+	// String PRODUCAO = "1";
+	// }
 	
 	interface VERSAO{
 		String NFE = "4.00";

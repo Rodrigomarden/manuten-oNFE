@@ -4,6 +4,7 @@ import br.com.samuelweb.nfe.dom.ConfiguracoesIniciaisNfe;
 import br.com.samuelweb.nfe.exception.NfeException;
 import br.com.samuelweb.nfe.util.CertificadoUtil;
 import br.com.samuelweb.nfe.util.ConstantesUtil;
+import br.com.samuelweb.nfe.util.Tipo;
 import br.com.samuelweb.nfe.util.WebServiceUtil;
 import br.com.samuelweb.nfe.util.XmlUtil;
 import br.inf.portalfiscal.nfe.schema_4.consStatServ.TConsStatServ;
@@ -16,7 +17,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import java.rmi.RemoteException;
 
-
 /**
  * Classe responsavel por fazer a Verificacao do Status Do Webservice
  * 
@@ -28,7 +28,8 @@ class Status {
 	/**
 	 * Metodo para Consulta de Status de Serviço
 	 *
-	 * @param tipo ConstantesUtil.NFE e ConstantesUtil.NFCE
+	 * @param tipo
+	 *            Tipo.NFE.get() e Tipo.NFCE.get()
 	 * @return
 	 * @throws NfeException
 	 */
@@ -38,7 +39,7 @@ class Status {
 			ConfiguracoesIniciaisNfe config = CertificadoUtil.iniciaConfiguracoes();
 
 			TConsStatServ consStatServ = new TConsStatServ();
-			consStatServ.setTpAmb(config.getAmbiente());
+			consStatServ.setTpAmb(config.getAmbiente().toString());
 			consStatServ.setCUF(config.getEstado().getCodigoIbge());
 			consStatServ.setVersao(config.getVersaoNfe());
 			consStatServ.setXServ("STATUS");
@@ -52,7 +53,9 @@ class Status {
 			NFeStatusServico4Stub.NfeDadosMsg dadosMsg = new NFeStatusServico4Stub.NfeDadosMsg();
 			dadosMsg.setExtraElement(ome);
 
-			NFeStatusServico4Stub stub = new NFeStatusServico4Stub(tipo.equals(ConstantesUtil.NFCE) ? WebServiceUtil.getUrl(ConstantesUtil.NFCE, ConstantesUtil.SERVICOS.STATUS_SERVICO) : WebServiceUtil.getUrl(ConstantesUtil.NFE, ConstantesUtil.SERVICOS.STATUS_SERVICO));
+			NFeStatusServico4Stub stub = new NFeStatusServico4Stub(
+					tipo.equals(Tipo.NFCE) ? WebServiceUtil.getUrl(Tipo.NFCE, ConstantesUtil.SERVICOS.STATUS_SERVICO)
+							: WebServiceUtil.getUrl(Tipo.NFE, ConstantesUtil.SERVICOS.STATUS_SERVICO));
 			NFeStatusServico4Stub.NfeResultMsg result = stub.nfeStatusServicoNF(dadosMsg);
 
 			return XmlUtil.xmlToObject(result.getExtraElement().toString(), TRetConsStatServ.class);
@@ -60,7 +63,7 @@ class Status {
 		} catch (RemoteException | XMLStreamException | JAXBException e) {
 			throw new NfeException(e.getMessage());
 		}
-		
+
 	}
-	
+
 }

@@ -20,54 +20,55 @@ import java.rmi.RemoteException;
  * @author Samuel Oliveira - samuk.exe@hotmail.com - www.samuelweb.com.br
  */
 
- class ConsultaXml {
+class ConsultaXml {
 
-    /**
-     * Classe Reponsavel Por Consultar o status da NFE na SEFAZ
-     *
-     * @param chave
-     * @param tipo
-     * @return
-     * @throws NfeException
-     */
-    static TRetConsSitNFe consultaXml(String chave, String tipo) throws NfeException {
+	/**
+	 * Classe Reponsavel Por Consultar o status da NFE na SEFAZ
+	 *
+	 * @param chave
+	 * @param tipo
+	 * @return
+	 * @throws NfeException
+	 */
+	static TRetConsSitNFe consultaXml(String chave, String tipo) throws NfeException {
 
-        try {
+		try {
 
-            ConfiguracoesIniciaisNfe config = CertificadoUtil.iniciaConfiguracoes();
+			ConfiguracoesIniciaisNfe config = CertificadoUtil.iniciaConfiguracoes();
 
-            TConsSitNFe consSitNFe = new TConsSitNFe();
-            consSitNFe.setVersao(config.getVersaoNfe());
-            consSitNFe.setTpAmb(config.getAmbiente());
-            consSitNFe.setXServ("CONSULTAR");
-            consSitNFe.setChNFe(chave);
+			TConsSitNFe consSitNFe = new TConsSitNFe();
+			consSitNFe.setVersao(config.getVersaoNfe());
+			consSitNFe.setTpAmb(config.getAmbiente().toString());
+			consSitNFe.setXServ("CONSULTAR");
+			consSitNFe.setChNFe(chave);
 
-            String xml = XmlUtil.objectToXml(consSitNFe);
+			String xml = XmlUtil.objectToXml(consSitNFe);
 
-            if (config.isLog()) {
-                System.out.println("Xml Consulta: " + xml);
-            }
-            OMElement ome = AXIOMUtil.stringToOM(xml);
+			if (config.isLog()) {
+				System.out.println("Xml Consulta: " + xml);
+			}
+			OMElement ome = AXIOMUtil.stringToOM(xml);
 
-            NFeConsultaProtocolo4Stub.NfeDadosMsg dadosMsg = new NFeConsultaProtocolo4Stub.NfeDadosMsg();
-            dadosMsg.setExtraElement(ome);
+			NFeConsultaProtocolo4Stub.NfeDadosMsg dadosMsg = new NFeConsultaProtocolo4Stub.NfeDadosMsg();
+			dadosMsg.setExtraElement(ome);
 
-            NFeConsultaProtocolo4Stub stub = new NFeConsultaProtocolo4Stub(tipo.equals(ConstantesUtil.NFCE) ? WebServiceUtil.getUrl(ConstantesUtil.NFCE, ConstantesUtil.SERVICOS.CONSULTA_XML) : WebServiceUtil.getUrl(ConstantesUtil.NFE, ConstantesUtil.SERVICOS.CONSULTA_XML));
-            //Timeout
-            if (!ObjetoUtil.isEmpty(config.getTimeout())) {
-                stub._getServiceClient().getOptions().setProperty(
-                        HTTPConstants.SO_TIMEOUT, config.getTimeout());
-                stub._getServiceClient().getOptions().setProperty(
-                        HTTPConstants.CONNECTION_TIMEOUT, config.getTimeout());
-            }
-            NFeConsultaProtocolo4Stub.NfeResultMsg result = stub.nfeConsultaNF(dadosMsg);
+			NFeConsultaProtocolo4Stub stub = new NFeConsultaProtocolo4Stub(tipo.equals(Tipo.NFCE.get())
+					? WebServiceUtil.getUrl(Tipo.NFCE, ConstantesUtil.SERVICOS.CONSULTA_XML)
+					: WebServiceUtil.getUrl(Tipo.NFE, ConstantesUtil.SERVICOS.CONSULTA_XML));
+			// Timeout
+			if (!ObjetoUtil.isEmpty(config.getTimeout())) {
+				stub._getServiceClient().getOptions().setProperty(HTTPConstants.SO_TIMEOUT, config.getTimeout());
+				stub._getServiceClient().getOptions().setProperty(HTTPConstants.CONNECTION_TIMEOUT,
+						config.getTimeout());
+			}
+			NFeConsultaProtocolo4Stub.NfeResultMsg result = stub.nfeConsultaNF(dadosMsg);
 
-            return XmlUtil.xmlToObject(result.getExtraElement().toString(), TRetConsSitNFe.class);
+			return XmlUtil.xmlToObject(result.getExtraElement().toString(), TRetConsSitNFe.class);
 
-        } catch (RemoteException | XMLStreamException | JAXBException e) {
-            throw new NfeException(e.getMessage());
-        }
+		} catch (RemoteException | XMLStreamException | JAXBException e) {
+			throw new NfeException(e.getMessage());
+		}
 
-    }
+	}
 
 }

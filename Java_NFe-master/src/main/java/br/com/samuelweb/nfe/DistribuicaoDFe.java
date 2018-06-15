@@ -14,7 +14,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import java.rmi.RemoteException;
 
-
 /**
  * @author Samuel Oliveira - samuk.exe@hotmail.com - www.samuelweb.com.br
  *
@@ -29,8 +28,9 @@ class DistribuicaoDFe {
 	 * @return
 	 * @throws NfeException
 	 */
-	static RetDistDFeInt consultaNfe(String tipoCliente, String cpfCnpj , String tipoConsulta , String nsuChave) throws NfeException{
-		
+	static RetDistDFeInt consultaNfe(String tipoCliente, String cpfCnpj, String tipoConsulta, String nsuChave)
+			throws NfeException {
+
 		try {
 
 			/**
@@ -40,20 +40,20 @@ class DistribuicaoDFe {
 
 			DistDFeInt distDFeInt = new DistDFeInt();
 			distDFeInt.setVersao(ConstantesUtil.VERSAO.DIST_DFE);
-			distDFeInt.setTpAmb(config.getAmbiente());
+			distDFeInt.setTpAmb(config.getAmbiente().toString());
 			distDFeInt.setCUFAutor(config.getEstado().getCodigoIbge());
 
-			if(ConstantesUtil.TIPOS.CNPJ.equals(tipoCliente)){
+			if (ConstantesUtil.TIPOS.CNPJ.equals(tipoCliente)) {
 				distDFeInt.setCNPJ(cpfCnpj);
-			}else{
+			} else {
 				distDFeInt.setCPF(cpfCnpj);
 			}
 
-			if(ConstantesUtil.TIPOS.NSU.equals(tipoConsulta)){
+			if (ConstantesUtil.TIPOS.NSU.equals(tipoConsulta)) {
 				DistDFeInt.DistNSU distNSU = new DistDFeInt.DistNSU();
 				distNSU.setUltNSU(nsuChave);
 				distDFeInt.setDistNSU(distNSU);
-			}else{
+			} else {
 				DistDFeInt.ConsChNFe chNFe = new DistDFeInt.ConsChNFe();
 				chNFe.setChNFe(nsuChave);
 				distDFeInt.setConsChNFe(chNFe);
@@ -64,31 +64,31 @@ class DistribuicaoDFe {
 			if (config.isLog()) {
 				System.out.println("Xml: " + xml);
 			}
-			
+
 			OMElement ome = AXIOMUtil.stringToOM(xml);
-			
-			NFeDistribuicaoDFeStub.NfeDadosMsg_type0 dadosMsgType0 = new NFeDistribuicaoDFeStub.NfeDadosMsg_type0();  
-			dadosMsgType0.setExtraElement(ome);  
-			  
-			NFeDistribuicaoDFeStub.NfeDistDFeInteresse distDFeInteresse = new NFeDistribuicaoDFeStub.NfeDistDFeInteresse();  
-			distDFeInteresse.setNfeDadosMsg(dadosMsgType0);  
-			  
-			NFeDistribuicaoDFeStub stub = new NFeDistribuicaoDFeStub( WebServiceUtil.getUrl(ConstantesUtil.NFE, ConstantesUtil.SERVICOS.DISTRIBUICAO_DFE));
-            //Timeout
-            if (!ObjetoUtil.isEmpty(config.getTimeout())) {
-                stub._getServiceClient().getOptions().setProperty(
-                        HTTPConstants.SO_TIMEOUT, config.getTimeout());
-                stub._getServiceClient().getOptions().setProperty(
-                        HTTPConstants.CONNECTION_TIMEOUT, config.getTimeout());
-            }
+
+			NFeDistribuicaoDFeStub.NfeDadosMsg_type0 dadosMsgType0 = new NFeDistribuicaoDFeStub.NfeDadosMsg_type0();
+			dadosMsgType0.setExtraElement(ome);
+
+			NFeDistribuicaoDFeStub.NfeDistDFeInteresse distDFeInteresse = new NFeDistribuicaoDFeStub.NfeDistDFeInteresse();
+			distDFeInteresse.setNfeDadosMsg(dadosMsgType0);
+
+			NFeDistribuicaoDFeStub stub = new NFeDistribuicaoDFeStub(
+					WebServiceUtil.getUrl(Tipo.NFE, ConstantesUtil.SERVICOS.DISTRIBUICAO_DFE));
+			// Timeout
+			if (!ObjetoUtil.isEmpty(config.getTimeout())) {
+				stub._getServiceClient().getOptions().setProperty(HTTPConstants.SO_TIMEOUT, config.getTimeout());
+				stub._getServiceClient().getOptions().setProperty(HTTPConstants.CONNECTION_TIMEOUT,
+						config.getTimeout());
+			}
 			NFeDistribuicaoDFeStub.NfeDistDFeInteresseResponse result = stub.nfeDistDFeInteresse(distDFeInteresse);
 
-			return XmlUtil.xmlToObject(result.getNfeDistDFeInteresseResult().getExtraElement().toString(), RetDistDFeInt.class);  
+			return XmlUtil.xmlToObject(result.getNfeDistDFeInteresseResult().getExtraElement().toString(),
+					RetDistDFeInt.class);
 
 		} catch (RemoteException | XMLStreamException | JAXBException e) {
 			throw new NfeException(e.getMessage());
 		}
 	}
-
 
 }

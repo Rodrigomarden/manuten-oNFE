@@ -14,7 +14,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import java.rmi.RemoteException;
 
-
 /**
  * Classe Responsavel Por pegar o Retorno da NFE, apos o Envio.
  *
@@ -22,51 +21,53 @@ import java.rmi.RemoteException;
  */
 class ConsultaRecibo {
 
-    /**
-     * Metodo Responsavel Por Pegar o Xml De Retorno.
-     *
-     * @param tConsReciNFe
-     * @param valida
-     * @param tipo
-     * @return
-     * @throws NfeException
-     */
+	/**
+	 * Metodo Responsavel Por Pegar o Xml De Retorno.
+	 *
+	 * @param tConsReciNFe
+	 * @param valida
+	 * @param tipo
+	 * @return
+	 * @throws NfeException
+	 */
 
-    static TRetConsReciNFe reciboNfe(String recibo, String tipo) throws NfeException {
+	static TRetConsReciNFe reciboNfe(String recibo, Tipo tipo) throws NfeException {
 
-        try {
+		try {
 
-            /**
-             * Informaçoes do Certificado Digital.
-             */
-            ConfiguracoesIniciaisNfe configuracoesNfe = CertificadoUtil.iniciaConfiguracoes();
+			/**
+			 * Informaçoes do Certificado Digital.
+			 */
+			ConfiguracoesIniciaisNfe configuracoesNfe = CertificadoUtil.iniciaConfiguracoes();
 
-            TConsReciNFe consReciNFe = new TConsReciNFe();
-            consReciNFe.setVersao(configuracoesNfe.getVersaoNfe());
-            consReciNFe.setTpAmb(configuracoesNfe.getAmbiente());
-            consReciNFe.setNRec(recibo);
+			TConsReciNFe consReciNFe = new TConsReciNFe();
+			consReciNFe.setVersao(configuracoesNfe.getVersaoNfe());
+			consReciNFe.setTpAmb(configuracoesNfe.getAmbiente().get());
+			consReciNFe.setNRec(recibo);
 
-            String xml = XmlUtil.objectToXml(consReciNFe);
+			String xml = XmlUtil.objectToXml(consReciNFe);
 
-            OMElement ome = AXIOMUtil.stringToOM(xml);
-            NFeRetAutorizacao4Stub.NfeDadosMsg dadosMsg = new NFeRetAutorizacao4Stub.NfeDadosMsg();
-            dadosMsg.setExtraElement(ome);
+			OMElement ome = AXIOMUtil.stringToOM(xml);
+			NFeRetAutorizacao4Stub.NfeDadosMsg dadosMsg = new NFeRetAutorizacao4Stub.NfeDadosMsg();
+			dadosMsg.setExtraElement(ome);
 
-            NFeRetAutorizacao4Stub stub = new NFeRetAutorizacao4Stub(tipo.equals(ConstantesUtil.NFCE) ? WebServiceUtil.getUrl(ConstantesUtil.NFCE, ConstantesUtil.SERVICOS.CONSULTA_RECIBO) : WebServiceUtil.getUrl(ConstantesUtil.NFE, ConstantesUtil.SERVICOS.CONSULTA_RECIBO));
-            //Timeout
-            if (!ObjetoUtil.isEmpty(configuracoesNfe.getTimeout())) {
-                stub._getServiceClient().getOptions().setProperty(
-                        HTTPConstants.SO_TIMEOUT, configuracoesNfe.getTimeout());
-                stub._getServiceClient().getOptions().setProperty(
-                        HTTPConstants.CONNECTION_TIMEOUT, configuracoesNfe.getTimeout());
-            }
-            NFeRetAutorizacao4Stub.NfeResultMsg result = stub.nfeRetAutorizacaoLote(dadosMsg);
+			NFeRetAutorizacao4Stub stub = new NFeRetAutorizacao4Stub(tipo.equals(Tipo.NFCE.get())
+					? WebServiceUtil.getUrl(Tipo.NFCE, ConstantesUtil.SERVICOS.CONSULTA_RECIBO)
+					: WebServiceUtil.getUrl(Tipo.NFE, ConstantesUtil.SERVICOS.CONSULTA_RECIBO));
+			// Timeout
+			if (!ObjetoUtil.isEmpty(configuracoesNfe.getTimeout())) {
+				stub._getServiceClient().getOptions().setProperty(HTTPConstants.SO_TIMEOUT,
+						configuracoesNfe.getTimeout());
+				stub._getServiceClient().getOptions().setProperty(HTTPConstants.CONNECTION_TIMEOUT,
+						configuracoesNfe.getTimeout());
+			}
+			NFeRetAutorizacao4Stub.NfeResultMsg result = stub.nfeRetAutorizacaoLote(dadosMsg);
 
-            return XmlUtil.xmlToObject(result.getExtraElement().toString(), TRetConsReciNFe.class);
+			return XmlUtil.xmlToObject(result.getExtraElement().toString(), TRetConsReciNFe.class);
 
-        } catch (RemoteException | XMLStreamException | JAXBException e) {
-            throw new NfeException(e.getMessage());
-        }
+		} catch (RemoteException | XMLStreamException | JAXBException e) {
+			throw new NfeException(e.getMessage());
+		}
 
-    }
+	}
 }
